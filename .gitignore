@@ -2,3 +2,5 @@
 /EigenSolveExample
 /driver
 /ADOLCExample
+/vega/*.o
+/vega/*.a
