@@ -618,6 +618,11 @@ int main (int argc, char ** argv)
   if (fullScreen==1)
     glutFullScreen();
 
+#ifdef __APPLE__
+  // This is needed on recent Mac OS X versions to correctly display the window.
+  glutReshapeWindow(windowWidth - 1, windowHeight - 1);
+#endif
+
   initialize();
 
   // callbacks
