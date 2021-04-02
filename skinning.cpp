@@ -73,6 +73,7 @@ Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions,
 
 void Skinning::applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const
 {
+  // TODO: Skinning::applySkinning()
   // Students should implement this
 
   // The following below is just a dummy implementation.

@@ -205,6 +205,7 @@ void FK::computeLocalAndGlobalTransforms(
     const std::vector<int> jointParents, const vector<int> & jointUpdateOrder,
     vector<RigidTransform4d> & localTransforms, vector<RigidTransform4d> & globalTransforms)
 {
+  // TODO: FK::computeLocalAndGlobalTransforms()
   // Students should implement this.
   // First, compute the localTransform for each joint, using eulerAngles and jointOrientationEulerAngles,
   // and the "euler2Rotation" function.
@@ -232,6 +233,7 @@ void FK::computeSkinningTransforms(
     const vector<RigidTransform4d> & invRestGlobalTransforms,
     vector<RigidTransform4d> & skinTransforms)
 {
+  // TODO: FK::computeSkinningTransforms()
   // Students should implement this.
 
   // The following is just a dummy implementation that should be replaced.

@@ -58,6 +58,7 @@ void forwardKinematicsFunction(
     int numIKJoints, const int * IKJointIDs, const FK & fk,
     const std::vector<real> & eulerAngles, std::vector<real> & handlePositions)
 {
+  // TODO: FK::forwardKinematicsFunction()
   // Students should implement this.
   // The implementation of this function is very similar to function computeLocalAndGlobalTransforms in the FK class.
   // The recommended approach is to first implement FK::computeLocalAndGlobalTransforms.
@@ -86,6 +87,7 @@ IK::IK(int numIKJoints, const int * IKJointIDs, FK * inputFK, int adolc_tagID)
 
 void IK::train_adolc()
 {
+  // TODO: IK::train_adolc()
   // Students should implement this.
   // Here, you should setup adol_c:
   //   Define adol_c inputs and outputs. 
@@ -100,6 +102,7 @@ void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
   // You may find the following helpful:
   int numJoints = fk->getNumJoints(); // Note that is NOT the same as numIKJoints!
 
+  // TODO: IK::doIK()
   // Students should implement this.
   // Use adolc to evalute the forwardKinematicsFunction and its gradient (Jacobian). It was trained in train_adolc().
   // Specifically, use ::function, and ::jacobian .
