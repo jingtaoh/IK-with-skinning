@@ -58,12 +58,58 @@ void forwardKinematicsFunction(
     int numIKJoints, const int * IKJointIDs, const FK & fk,
     const std::vector<real> & eulerAngles, std::vector<real> & handlePositions)
 {
-  // TODO: FK::forwardKinematicsFunction()
+  // TODO: debug forwardKinematicsFunction()
   // Students should implement this.
   // The implementation of this function is very similar to function computeLocalAndGlobalTransforms in the FK class.
   // The recommended approach is to first implement FK::computeLocalAndGlobalTransforms.
   // Then, implement the same algorithm into this function. To do so,
   // you can use fk.getJointUpdateOrder(), fk.getJointRestTranslation(), and fk.getJointRotateOrder() functions.
+
+  int numJoints = fk.getNumJoints();
+
+  // compute local transforms of all joints
+  vector<Mat3<real>> localR(numJoints);
+  vector<Vec3<real>> localt(numJoints);
+  for (int i = 0; i < numJoints; i++)
+  {
+      // rotation
+      Mat3<real> RJoint, ROrient;
+      RJoint = Euler2Rotation(&eulerAngles[i * 3], fk.getJointRotateOrder(i));
+      real orient[3] = {fk.getJointOrient(i).data()[0], fk.getJointOrient(i).data()[1], fk.getJointOrient(i).data()[2]};
+      ROrient = Euler2Rotation(orient, fk.getJointRotateOrder(i));
+      // translation
+      localR.push_back(ROrient * RJoint);
+      Vec3<real> T(fk.getJointRestTranslation(i).data()[0], fk.getJointRestTranslation(i).data()[1], fk.getJointRestTranslation(i).data()[2]);
+      localt.push_back(T);
+  }
+  // compute global transforms of all joints
+  vector<Mat3<real>> globalR(numJoints);
+  vector<Vec3<real>> globalt(numJoints);
+  for (int i = 0; i < numJoints; i++)
+  {
+      Mat3<real> R1 = (fk.getJointParent(fk.getJointUpdateOrder(i)) == -1) ?
+              Mat3<real>(1) : globalR[fk.getJointParent(fk.getJointUpdateOrder(i))];
+      Vec3<real> t1 = (fk.getJointParent(fk.getJointUpdateOrder(i)) == -1) ?
+              Vec3<real>(1) : globalt[fk.getJointParent(fk.getJointUpdateOrder(i))];
+      Mat3<real> R2 = localR[fk.getJointUpdateOrder(i)];
+      Vec3<real> t2 = localt[fk.getJointUpdateOrder(i)];
+
+      Mat3<real> Rout;
+      Vec3<real> tout;
+      multiplyAffineTransform4ds(R1, t1, R2, t2, Rout, tout);
+      globalR[fk.getJointUpdateOrder(i)] = Rout;
+      globalt[fk.getJointUpdateOrder(i)] = tout;
+  }
+
+  // compute world position of all IK joints
+  for (int i = 0; i < numIKJoints; i++)
+  {
+      Vec3<real> handlePos;
+      handlePos = globalt[IKJointIDs[i]];
+      for (int j = 0; j < 3; j++)
+        handlePositions[i * 3 + j] = handlePos[j];
+  }
+
   // Also useful is the multiplyAffineTransform4ds function in minivectorTemplate.h .
   // It would be in principle possible to unify this "forwardKinematicsFunction" and FK::computeLocalAndGlobalTransforms(),
   // so that code is only written once. We considered this; but it is actually not easily doable.
@@ -87,14 +133,38 @@ IK::IK(int numIKJoints, const int * IKJointIDs, FK * inputFK, int adolc_tagID)
 
 void IK::train_adolc()
 {
-  // TODO: IK::train_adolc()
+  // TODO: debug IK::train_adolc()
   // Students should implement this.
   // Here, you should setup adol_c:
-  //   Define adol_c inputs and outputs. 
+  //   Define adol_c inputs and outputs.
+  //   y = f(x), mapping R^m -> R^n (m = 3 * numJoints, n = 3 * numIKJoints)
+  int n = 3 * fk->getNumJoints();   // input dimension is n
+  int m = 3 * numIKJoints;          // output dimension is m
+
+  // first, call trace_on to ask ADOL-C to begin recording how function f is implemented
+  int adolc_tagID = 1; // This is an ID used in ADOL-C to represent each individual function.
+  trace_on(adolc_tagID); // start tracking computation with ADOL-C
+
+  vector<adouble> x(n); // define the input of the function f
+  for(int i = 0; i < n; i++)
+      x[i] <<= 0.0; // The <<= syntax tells ADOL-C that these are the input variables.
+
+  vector<adouble> y(m); // define the output of the function f
+
+  // The computation of f goes here:
   //   Use the "forwardKinematicsFunction" as the function that will be computed by adol_c.
   //   This will later make it possible for you to compute the gradient of this function in IK::doIK
   //   (in other words, compute the "Jacobian matrix" J).
   // See ADOLCExample.cpp .
+  forwardKinematicsFunction(numIKJoints, IKJointIDs, *fk, x, y);
+
+  vector<double> output(m);
+  for(int i = 0; i < m; i++)
+      y[i] >>= output[i]; // Use >>= to tell ADOL-C that y[i] are the output variables
+
+  // Finally, call trace_off to stop recording the function f.
+  trace_off(); // ADOL-C tracking finished
+
 }
 
 void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
