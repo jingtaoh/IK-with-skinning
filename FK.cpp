@@ -189,7 +189,9 @@ vector<int> FK::getJointDescendents(int jointID) const
 // This is the main function that performs forward kinematics.
 // Each joint has its local transformation relative to the parent joint. 
 // globalTransform of a joint is the transformation that converts a point expressed in the joint's local frame of reference, to the world coordinate frame.
-// localTransform is the transformation that converts a point expressed in the joint's local frame of reference, to the coordinate frame of its parent joint. Specifically, if xLocal is the homogeneous coordinate of a point expressed in the joint's local frame, and xParent is the homogeneous coordinate of the same point expressed in the frame of the joint's parent, we have:
+// localTransform is the transformation that converts a point expressed in the joint's local frame of reference, to the coordinate frame of its parent joint.
+// Specifically, if xLocal is the homogeneous coordinate of a point expressed in the joint's local frame, and xParent is the homogeneous coordinate of the
+// same point expressed in the frame of the joint's parent, we have:
 // xParent = localTransform * xLocal , and
 // globalTransform = parentGlobalTransform * localTransform .
 // Note that the globalTransform of the root joint equals its localTransform.
@@ -205,24 +207,35 @@ void FK::computeLocalAndGlobalTransforms(
     const std::vector<int> jointParents, const vector<int> & jointUpdateOrder,
     vector<RigidTransform4d> & localTransforms, vector<RigidTransform4d> & globalTransforms)
 {
-  // TODO: FK::computeLocalAndGlobalTransforms()
   // Students should implement this.
   // First, compute the localTransform for each joint, using eulerAngles and jointOrientationEulerAngles,
   // and the "euler2Rotation" function.
+  for (int i = 0; i < localTransforms.size(); i++)
+  {
+      Mat3d RJoint, ROrient, R;
+      euler2Rotation(eulerAngles[i].data(), RJoint.data(), rotateOrders[i]);
+      euler2Rotation(jointOrientationEulerAngles[i].data(), ROrient.data(), rotateOrders[i]);
+      R = ROrient * RJoint;
+      double local[16] = {
+              R[0][0], R[0][1], R[0][2], translations[i][0],
+              R[1][0], R[1][1], R[1][2], translations[i][1],
+              R[2][0], R[2][1], R[2][2], translations[i][2],
+              0, 0, 0, 1};
+      localTransforms[i] = RigidTransform4d(local);
+  }
   // Then, recursively compute the globalTransforms, from the root to the leaves of the hierarchy.
   // Use the jointParents and jointUpdateOrder arrays to do so.
   // Also useful are the Mat3d and RigidTransform4d classes defined in the Vega folder.
-
-  // The following is just a dummy implementation that should be replaced.
   double identity[16] = {
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1 };
-  for(int i=0; i<localTransforms.size(); i++)
+  for (int i = 0; i < jointUpdateOrder.size(); i++)
   {
-    localTransforms[i] = RigidTransform4d(identity);
-    globalTransforms[i] = RigidTransform4d(identity);
+      globalTransforms[jointUpdateOrder[i]] = RigidTransform4d(
+              ((jointParents[jointUpdateOrder[i]] == -1) ? identity : globalTransforms[jointParents[jointUpdateOrder[i]]])
+                      * localTransforms[jointUpdateOrder[i]]);
   }
 }
 
@@ -233,18 +246,12 @@ void FK::computeSkinningTransforms(
     const vector<RigidTransform4d> & invRestGlobalTransforms,
     vector<RigidTransform4d> & skinTransforms)
 {
-  // TODO: FK::computeSkinningTransforms()
+  // TODO: debug FK::computeSkinningTransforms()
   // Students should implement this.
 
-  // The following is just a dummy implementation that should be replaced.
-  double identity[16] = {
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1 };
-  for(int i=0; i<skinTransforms.size(); i++)
+  for(int i=0; i<globalTransforms.size(); i++)
   {
-    skinTransforms[i] = RigidTransform4d(identity);
+    skinTransforms[i] = RigidTransform4d(globalTransforms[i] * invRestGlobalTransforms[i]);
   }
 }
 
