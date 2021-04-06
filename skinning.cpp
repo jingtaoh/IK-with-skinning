@@ -73,15 +73,21 @@ Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions,
 
 void Skinning::applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const
 {
-  // TODO: Skinning::applySkinning()
+  // TODO: debug Skinning::applySkinning()
   // Students should implement this
 
-  // The following below is just a dummy implementation.
   for(int i=0; i<numMeshVertices; i++)
   {
-    newMeshVertexPositions[3 * i + 0] = restMeshVertexPositions[3 * i + 0];
-    newMeshVertexPositions[3 * i + 1] = restMeshVertexPositions[3 * i + 1];
-    newMeshVertexPositions[3 * i + 2] = restMeshVertexPositions[3 * i + 2];
+    RigidTransform4d transformMatrix(Mat4d::Zero);
+    for (int j=0; j<numJointsInfluencingEachVertex; j++)
+    {
+        transformMatrix += meshSkinningWeights[i * numJointsInfluencingEachVertex + j] * jointSkinTransforms[meshSkinningJoints[i * numJointsInfluencingEachVertex + j]];
+    }
+    Vec4d restMeshVertexPos(restMeshVertexPositions[3 * i + 0], restMeshVertexPositions[3 * i + 1], restMeshVertexPositions[3 * i + 2], 1);
+    Vec4d newMeshVertexPos = transformMatrix * restMeshVertexPos;
+    newMeshVertexPositions[3 * i + 0] = newMeshVertexPos[0];
+    newMeshVertexPositions[3 * i + 1] = newMeshVertexPos[1];
+    newMeshVertexPositions[3 * i + 2] = newMeshVertexPos[2];
   }
 }
 
