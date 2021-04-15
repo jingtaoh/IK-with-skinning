@@ -25,7 +25,7 @@ INCLUDE = -Ivega/ $(ADOLC_INCLUDE) $(EIGEN_INCLUDE)
 ALL = driver EigenSolveExample ADOLCExample
 all: $(ALL)
 
-driver: $(DRIVER_OBJECT_FILES) vega/libpartialVega.a
+driver: $(DRIVER_OBJECT_FILES) vega/libpartialVega.a ppm.o pic.o
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $^ $(ADOLC_LIB) $(OPENGL_LIBS) -lm -o $@
 
 vega/libpartialVega.a:  $(addprefix vega/, $(LIB_OBJECT_FILES))
