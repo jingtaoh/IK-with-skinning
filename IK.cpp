@@ -155,7 +155,7 @@ void IK::train_adolc()
 
 void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
 {
-//    cout << targetHandlePositions[0] << endl;
+    // TODO: subdivide long IK distance
   int numJoints = fk->getNumJoints(); // Note that is NOT the same as numIKJoints!
 
   // evaluate forwardKinematicsFunction to get handlePositions(n)
@@ -195,6 +195,9 @@ void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
 
 void IK::solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::VectorXd & dtheta) {
 
+    // TODO: make DLS a function
+    // TODO: implement jacobian transpose (for single end effector)
+    // TODO: implement pseudoinverse
     Eigen::MatrixXd JT = J.transpose(); // J^T(nxm)
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(FKInputDim, FKInputDim); // I(nxn)
     double alpha = 0.01;

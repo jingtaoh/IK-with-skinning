@@ -73,6 +73,8 @@ Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions,
 
 void Skinning::applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const
 {
+    // TODO: make LBS a function
+    // TODO: implement DQS
   // linear blend skinning
   for(int i=0; i<numMeshVertices; i++)
   {
