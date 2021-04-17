@@ -50,6 +50,7 @@ static bool showWireframe = true;
 static bool showObject = true;
 static bool useLighting = true;
 static double allLightsIntensity = 1.0;
+static bool useLBS = true;
 
 static Vec3d modelCenter(0.0);
 static double modelRadius = 1.0;
@@ -99,7 +100,7 @@ static void updateSkinnedMesh()
 
   fk->computeJointTransforms();
 
-  skinning->applySkinning(fk->getJointSkinTransforms(), newPosv);
+  skinning->applySkinning(fk->getJointSkinTransforms(), newPosv, useLBS);
   for(size_t i = 0; i < mesh->getNumVertices(); i++)
     mesh->setPosition(i, newPos[i]);
 
@@ -202,7 +203,7 @@ static void idleFunction()
 
     // update menu bar
     char windowTitle[4096];
-    sprintf(windowTitle, "Vertices: %d | %.1f FPS | graphicsFrame %d ", meshDeformable->Getn(), fpsBuffer.getAverage(), graphicsFrameID);
+    sprintf(windowTitle, "Vertices: %d | %.1f FPS | graphicsFrame %d | %s", meshDeformable->Getn(), fpsBuffer.getAverage(), graphicsFrameID, (useLBS ? "LBS" : "DQS"));
     glutSetWindowTitle(windowTitle);
     titleBarFrameCounter = 0;
   }
@@ -375,6 +376,10 @@ static void keyboardFunc(unsigned char key, int x, int y)
 
     case ' ':
       saveScreenToFile = 1 - saveScreenToFile;
+      break;
+
+    case 'l':
+      useLBS = !useLBS;
       break;
 
     default:

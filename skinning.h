@@ -24,7 +24,9 @@ public:
   // jointSkinTransform = globalTransform * globalRestTransform^{-1}
   // input: jointSkinTransforms
   // output: newMeshVertexPositions (length is 3*numMeshVertices)
-  void applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const;
+  void applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions, bool useLBS) const;
+  void applyLBS(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const;
+  void applyDQS(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const;
 
 protected:
   int numMeshVertices = 0;
