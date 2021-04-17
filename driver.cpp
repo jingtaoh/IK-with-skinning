@@ -50,7 +50,8 @@ static bool showWireframe = true;
 static bool showObject = true;
 static bool useLighting = true;
 static double allLightsIntensity = 1.0;
-static bool useLBS = true;
+static bool useLBS = true;  // use linear blend skinning as default skinning method
+static bool useDLS = true;  // use damped least squares as default IK solver
 
 static Vec3d modelCenter(0.0);
 static double modelRadius = 1.0;
@@ -187,7 +188,7 @@ static void idleFunction()
   const int maxIKIters = 10;
   const double maxOneStepDistance = modelRadius / 1000;
 
-  ik->doIK(IKJointPos.data(), fk->getJointEulerAngles());
+  ik->doIK(IKJointPos.data(), fk->getJointEulerAngles(), useDLS);
 
   updateSkinnedMesh();
 
@@ -203,7 +204,7 @@ static void idleFunction()
 
     // update menu bar
     char windowTitle[4096];
-    sprintf(windowTitle, "Vertices: %d | %.1f FPS | graphicsFrame %d | %s", meshDeformable->Getn(), fpsBuffer.getAverage(), graphicsFrameID, (useLBS ? "LBS" : "DQS"));
+    sprintf(windowTitle, "Vertices: %d | %.1f FPS | graphicsFrame %d | %s | %s", meshDeformable->Getn(), fpsBuffer.getAverage(), graphicsFrameID, (useLBS ? "LBS" : "DQS"), (useDLS ? "DLS" : "Psedoinverse"));
     glutSetWindowTitle(windowTitle);
     titleBarFrameCounter = 0;
   }
@@ -380,6 +381,10 @@ static void keyboardFunc(unsigned char key, int x, int y)
 
     case 'l':
       useLBS = !useLBS;
+      break;
+
+    case 'd':
+      useDLS = !useDLS;
       break;
 
     default:

@@ -153,7 +153,7 @@ void IK::train_adolc()
 
 }
 
-void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
+void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles, bool useDLS)
 {
     // TODO: subdivide long IK distance
   int numJoints = fk->getNumJoints(); // Note that is NOT the same as numIKJoints!
@@ -185,7 +185,7 @@ void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
 
   // compute dtheta (mx1)
   Eigen::VectorXd dtheta(FKInputDim);
-  solveIK(J, db, dtheta);
+  solveIK(J, db, dtheta, useDLS);
 
   // update targetEulerAngles
   for (int i = 0; i < numJoints; i++)
@@ -193,16 +193,29 @@ void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles)
           jointEulerAngles[i][j] += dtheta[i * 3 + j];
 }
 
-void IK::solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::VectorXd & dtheta) {
+void IK::solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::VectorXd & dtheta, bool useDLS) {
 
     // TODO: make DLS a function
     // TODO: implement jacobian transpose (for single end effector)
     // TODO: implement pseudoinverse
     Eigen::MatrixXd JT = J.transpose(); // J^T(nxm)
-    Eigen::MatrixXd I = Eigen::MatrixXd::Identity(FKInputDim, FKInputDim); // I(nxn)
-    double alpha = 0.01;
-    // Tikhonov regularization, same as slove the following:
-    // (J^T * J + alpha * I) * dtheta = J^T * deltab, solve for dtheta
-    dtheta = (JT * J + alpha * I).ldlt().solve(JT * db);
+
+    if (useDLS)
+    {
+        // Damped least squares, same as solving the following:
+        // (J^T * J + alpha * I) * dtheta = J^T * deltab, solve for dtheta
+
+        Eigen::MatrixXd I = Eigen::MatrixXd::Identity(FKInputDim, FKInputDim); // I(nxn)
+        double alpha = 0.01;
+
+        dtheta = (JT * J + alpha * I).ldlt().solve(JT * db);
+    } else
+    {
+        // pseudo inverse, same as solving the following:
+        // dtheta = J_dagger * db, where J_dagger = J^T * (J * J^T)^(-1)
+
+        dtheta = JT * (J * JT).inverse() * db;
+    }
+
 }
 
