@@ -42,7 +42,7 @@ protected:
   int FKOutputDim = 0; // forward dynamics output dimension
 
   void train_adolc();
-  void solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::VectorXd & dtheta, bool useDLS);
+  void solveIK(const Eigen::MatrixXd & J, Eigen::VectorXd & db, Eigen::VectorXd & dtheta, bool useDLS);
 };
 
 #endif

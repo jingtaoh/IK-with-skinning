@@ -155,7 +155,6 @@ void IK::train_adolc()
 
 void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles, bool useDLS)
 {
-    // TODO: subdivide long IK distance
   int numJoints = fk->getNumJoints(); // Note that is NOT the same as numIKJoints!
 
   // evaluate forwardKinematicsFunction to get handlePositions(n)
@@ -193,18 +192,26 @@ void IK::doIK(const Vec3d * targetHandlePositions, Vec3d * jointEulerAngles, boo
           jointEulerAngles[i][j] += dtheta[i * 3 + j];
 }
 
-void IK::solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::VectorXd & dtheta, bool useDLS) {
+void IK::solveIK(const Eigen::MatrixXd & J, Eigen::VectorXd & db, Eigen::VectorXd & dtheta, bool useDLS) {
 
-    // TODO: make DLS a function
-    // TODO: implement jacobian transpose (for single end effector)
-    // TODO: implement pseudoinverse
-    Eigen::MatrixXd JT = J.transpose(); // J^T(nxm)
+    // subdivide if db is too large
+    bool useSubdivision = false;
+    double maxDistance = 0.8;
+    for (int i = 0; i < db.size(); i++)
+        if (db(i) > maxDistance) useSubdivision = true;
 
-    if (useDLS)
+    if (useSubdivision)
+    {
+        db *= 0.5;
+        solveIK(J, db, dtheta, useDLS);
+        dtheta *= 2.0;
+    }
+    else if (useDLS)
     {
         // Damped least squares, same as solving the following:
         // (J^T * J + alpha * I) * dtheta = J^T * deltab, solve for dtheta
 
+        Eigen::MatrixXd JT = J.transpose(); // J^T(nxm)
         Eigen::MatrixXd I = Eigen::MatrixXd::Identity(FKInputDim, FKInputDim); // I(nxn)
         double alpha = 0.01;
 
@@ -214,6 +221,7 @@ void IK::solveIK(const Eigen::MatrixXd & J, const Eigen::VectorXd & db, Eigen::V
         // pseudo inverse, same as solving the following:
         // dtheta = J_dagger * db, where J_dagger = J^T * (J * J^T)^(-1)
 
+        Eigen::MatrixXd JT = J.transpose(); // J^T(nxm)
         dtheta = JT * (J * JT).inverse() * db;
     }
 
