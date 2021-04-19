@@ -55,5 +55,12 @@ USC ID: 2697735160
       - 600 jpeg images (200 for armadilo, 200 for dragon, and 200 for hand, at 800x600 resolution)
       - anim.mp4 (15fps)
 
+# Additional key mapping
+Key | Functionality
+--- | ---
+ d  | toggle between DLS and Pseudoinverse IK algorithms
+ l  | toggle between LBS and DQS skinning methods
+space| save save the current screen to a file
+
  # Comment
  Thank you for grading, hope you enjoy :)
