@@ -62,5 +62,5 @@ Key | Functionality
  l  | toggle between LBS and DQS skinning methods
 space| save save the current screen to a file
 
- # Comment
- Thank you for grading, hope you enjoy :)
+# Comment
+Thank you for grading, hope you enjoy :)
