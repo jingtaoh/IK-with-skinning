@@ -41,9 +41,11 @@ USC ID: 2697735160
     - Pseudoinverse
         - work poorly whenever the target positions close to out of reach, which means jocobian close to singular and solution become unstable (you can see that by toggling between two methods using key 'd')
         - no need to tune parameter
+        - hard constrains, therefore IK handles will track the end effector more accurately
     - Damped least squares
         - substantially better than Pseudoinverse, more stable
         - have to set damping constant alpha to minimize the average error
+        - not hard constrains, therefore IK handle won't follow the end effector closely
 
 # Submission Requirement
 - Source code
